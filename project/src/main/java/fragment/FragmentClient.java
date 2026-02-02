@@ -20,9 +20,15 @@ public class FragmentClient {
     /**
      * TODO: Initialize JDBC connections to all N Fragments.
      */
-    public void setupConnections() {
-		
-	
+    public void setupConnections() throws SQLException {
+        for (int i = 0; i < numFragments; i++) {
+            String url = "jdbc:postgresql://localhost:5432/fragment" + i;
+            String user = "postgres";
+            String password = "user";
+
+            Connection conn = DriverManager.getConnection(url, user, password);
+            connectionPool.put(i, conn);
+        }
     }
 
     /**

@@ -37,7 +37,21 @@ public class FragmentClient {
     public void insertStudent(String studentId, String name, int age, String email) {
         try {
             // Your code here:
-            
+            int fragId = router.getFragmentId(studentId);
+            Connection conn = connectionPool.get(fragId);
+
+            String sql = "INSERT INTO Student VALUES (?, ?, ?, ?)";
+
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, studentId);
+                ps.setString(2, name);
+                ps.setInt(3, age);
+                ps.setString(4, email);
+                ps.executeUpdate();
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -49,6 +63,7 @@ public class FragmentClient {
     public void insertGrade(String studentId, String courseId, int score) {
         int fragId = router.getFragmentId(studentId);
         Connection conn = connectionPool.get(fragId);
+
         String sql = "INSERT INTO Grade VALUES (?, ?, ?)";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {

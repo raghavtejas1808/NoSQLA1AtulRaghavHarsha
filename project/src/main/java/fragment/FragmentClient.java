@@ -5,6 +5,8 @@ import java.sql.DriverManager;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
+import java.util.concurrent.ThreadLocalRandom;
+
 public class FragmentClient {
 
     private Map<Integer, Connection> connectionPool;
@@ -22,9 +24,9 @@ public class FragmentClient {
      */
     public void setupConnections() throws SQLException {
         for (int i = 0; i < numFragments; i++) {
-            String url = "jdbc:postgresql://localhost:5432/fragment" + i;
+            String url = "jdbc:postgresql://localhost:5432/fragment1" + i;
             String user = "postgres";
-            String password = "user";
+            String password = "root";
 
             Connection conn = DriverManager.getConnection(url, user, password);
             connectionPool.put(i, conn);
@@ -79,49 +81,97 @@ public class FragmentClient {
         }
     }
 
-    /**
-     * TODO: Fetch the student's name and email.
-     */
-    public String getStudentProfile(String studentId) {
-        try {
-            // Your code here
-            return null; 
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "ERROR";
+     /**
+      * TODO: Fetch the student's name and email.
+      */
+    public String getStudentProfile(String studentId){
+        int fragId = router.getFragmentId(studentId);
+        Connection conn = connectionPool.get(fragId);
+
+        String sql = "SELECT name,email from Student where student_id = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)){
+            ps.setString(1,studentId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("name") + "," + rs.getString("email");
+            }
         }
-    }
+        catch (Exception e) {
+             e.printStackTrace();
+             return "ERROR";
+         }
+         return null;
+     }
 
-    /**
-     * TODO: Calculate the average score per department.
-     */
-    public String getAvgScoreByDept() {
-        try {
-            // Your code here
-            return null;
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "ERROR";
+     /**
+      * TODO: Calculate the average score per department.
+      */
+     public String getAvgScoreByDept() {
+        int fragmentId = ThreadLocalRandom.current().nextInt(numFragments);
+        Connection conn = connectionPool.get(fragmentId);
+
+        String sql =
+                "SELECT c.department, AVG(g.score) AS avg_score " +
+                        "FROM Grade g JOIN Course c ON g.course_id = c.course_id " +
+                        "GROUP BY c.department";
+
+        StringBuilder result = new StringBuilder();
+
+        try (Statement stmt = conn.createStatement()) {
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                result.append(rs.getString("department")).append("-")
+                        .append("AverageScore:").append(String.format("%.1f", rs.getDouble("avg_score")))
+                        .append(";\t");
+            }
+
+            if (!result.isEmpty())
+                result.setLength(result.length() - 1);
+
+            return result.toString();
         }
-    }
 
-    /**
-     * TODO: Find all the students that have taken most number of courses
-     */
-    public String getAllStudentsWithMostCourses() {
-        try {
-            // Your code here
-            return null;
+        catch (Exception e) {
+             e.printStackTrace();
+             return "ERROR";
+         }
+     }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "ERROR";
+     /**
+      * TODO: Find all the students that have taken most number of courses
+      */
+     public String getAllStudentsWithMostCourses() {
+        int fragmentId = ThreadLocalRandom.current().nextInt(numFragments);
+        Connection conn = connectionPool.get(fragmentId);
+
+        String sql =
+                "SELECT student_id, COUNT(course_id) as NCourses FROM Grade " +
+                        "GROUP BY student_id HAVING COUNT(course_id) = " +
+                        "(SELECT MAX(cnt) FROM" +
+                        " (SELECT COUNT(course_id) AS cnt FROM Grade GROUP BY student_id))";
+        StringBuilder result = new StringBuilder();
+        try (Statement stmt = conn.createStatement()) {
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                result.append("Student_ID:").append(rs.getString("student_id"))
+                        .append("\t").append("N(Courses):").append(rs.getInt("NCourses"))
+                        .append("\n");
+            }
+            return result.toString();
         }
-    }
 
-    public void closeConnections() {
-        
-    }
-}
+        catch (Exception e) {
+             e.printStackTrace();
+             return "ERROR";
+         }
+     }
+    public void closeConnections() throws SQLException {
+        for (Connection conn : connectionPool.values()){
+            conn.close();
+        }
+     }
+
+ }

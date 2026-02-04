@@ -105,7 +105,6 @@ public class FragmentClient {
          return null;
      }
 
-
      /**
       * TODO: Calculate the average score per department.
       */
@@ -117,7 +116,6 @@ public class FragmentClient {
                 "SELECT c.department, AVG(g.score) AS avg_score " +
                         "FROM Grade g JOIN Course c ON g.course_id = c.course_id " +
                         "GROUP BY c.department";
-
         StringBuilder result = new StringBuilder();
 
         try (Statement stmt = conn.createStatement()) {
@@ -130,7 +128,6 @@ public class FragmentClient {
 
             if (!result.isEmpty())
                 result.setLength(result.length() - 1);
-
             return result.toString();
         }
 
@@ -139,14 +136,12 @@ public class FragmentClient {
              return "ERROR";
          }
      }
-
      /**
       * TODO: Find all the students that have taken most number of courses
       */
      public String getAllStudentsWithMostCourses() {
         int fragmentId = ThreadLocalRandom.current().nextInt(numFragments);
         Connection conn = connectionPool.get(fragmentId);
-
         String sql =
                 "SELECT student_id, COUNT(course_id) as NCourses FROM Grade " +
                         "GROUP BY student_id HAVING COUNT(course_id) = " +
@@ -162,7 +157,6 @@ public class FragmentClient {
             }
             return result.toString();
         }
-
         catch (Exception e) {
              e.printStackTrace();
              return "ERROR";

@@ -24,10 +24,8 @@ public class FragmentClient {
      */
     public void setupConnections() throws SQLException {
         for (int i = 0; i < numFragments; i++) {
-            String url = "jdbc:postgresql://localhost:5432/fragment_" + i;
             String url = "jdbc:postgresql://localhost:5432/fragment1" + i;
             String user = "postgres";
-            String password = "admin";
             String password = "root";
 
             Connection conn = DriverManager.getConnection(url, user, password);
@@ -192,8 +190,11 @@ public class FragmentClient {
      }
     public void closeConnections() throws SQLException {
         for (Connection conn : connectionPool.values()){
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate("delete from Grade");
+                stmt.executeUpdate("delete from Student");
+            }
             conn.close();
         }
-     }
-
+    }
  }

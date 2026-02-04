@@ -3,7 +3,7 @@ import java.util.Scanner;
 import fragment.FragmentClient;
 
 public class Driver {
-    private static final int NUM_FRAGMENTS = 3;
+    private static final int NUM_FRAGMENTS = 1;
 
     public static void main(String[] args) {
         FragmentClient client = new FragmentClient(NUM_FRAGMENTS);
@@ -58,9 +58,9 @@ public class Driver {
                             break;
 
                         case "READ_PROFILE":
-                            String profile = client.getStudentProfile(parts[1]);
-                            outputWriter.println(profile != null ? profile : "NULL");
-                            break;
+                             String profile = client.getStudentProfile(parts[1]);
+                             outputWriter.println(profile != null ? profile : "NULL");
+                             break;
 
                         case "READ_SCORE":
                             String gpa = client.getAvgScoreByDept();
@@ -68,9 +68,9 @@ public class Driver {
                             break;
 
                         case "READ_ALL":
-                            String top = client.getAllStudentsWithMostCourses();
-                            outputWriter.println(top != null ? top : "NULL");
-                            break;
+                             String top = client.getAllStudentsWithMostCourses();
+                             outputWriter.println(top != null ? top : "NULL");
+                             break;
 
                         default:
                             outputWriter.println("ERROR: Unknown command " + command);

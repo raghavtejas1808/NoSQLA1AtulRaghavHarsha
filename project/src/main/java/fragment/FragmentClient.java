@@ -61,7 +61,7 @@ public class FragmentClient {
         int fragId = router.getFragmentId(studentId);
         Connection conn = connectionPool.get(fragId);
 
-        String sql = "INSERT INTO Grade VALUES (?, ?, ?)";
+        String sql = "INSERT INTO Grade(student_id,course_id,score)"+" VALUES (?, ?, ?)"+"on Conflict(student_id,course_id)"+"DO update set score = Excluded.score";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, studentId);
